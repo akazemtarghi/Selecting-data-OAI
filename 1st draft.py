@@ -3,28 +3,31 @@ import glob
 import os
 
 
-def Eligible(months, subject_baseline,kl_xray,bml_mr=None ):
+def eligible(months, subject_baseline, kl_xray, bml_mr=None ):
     final_content = pd.DataFrame()
 
-    for i, month in enumerate(months):
-        name_content = 'contents_' + month + '.csv'
-        for id in subject_baseline:
+
+
+    for id in subject_baseline:
+        temp = 0
+
+        for i, month in enumerate(months):
+            name_content = 'contents_' + month + '.csv'
             content_specific = Contents_frames[name_content]
             content_person = content_specific.loc[(content_specific['ParticipantID'] == id)]
 
             if mri_sequence[0] and mri_sequence[1] in content_person.values:
+                temp = temp + 1
 
-                eligible_id.append(id)
-                KL_grade = kl_xray.loc[(kl_xray['ID'] == str(id))]
-                final_content = final_content.append(KL_grade)
-
-            else:
-                print('noo')
+        if temp == len(months):
+            eligible_id.append(id)
+            KL_grade = kl_xray.loc[(kl_xray['ID'] == str(id))]
+            final_content = final_content.append(KL_grade)
 
     return eligible_id, final_content
 
 
-filename = 'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/Coding/Selecting Data/kxr_sq_bu00.sas7bdat'
+filename = 'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/Coding/kxr_sq_bu00.sas7bdat'
 kl_xray = pd.read_sas(filename, format='sas7bdat', encoding='iso-8859-1')
 
 # filename = 'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/Coding/Selecting Data/kmri_sq_moaks_bicl00.sas7bdat'
@@ -89,7 +92,7 @@ subject_baseline = subject_baseline.drop_duplicates()
 subject_baseline = subject_baseline.reset_index(drop=True)
 eligible_id = []
 
-eligible_id, final_content = Eligible(months, subject_baseline,kl_xray)
+eligible_id, final_content = eligible(months, subject_baseline, kl_xray)
 
 final_content.drop_duplicates(subset=['ID', 'SIDE'], inplace=True)
 final_content = final_content.reset_index(drop=True)
