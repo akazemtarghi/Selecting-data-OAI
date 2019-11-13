@@ -16,7 +16,7 @@ def eligible(months, subject_baseline, kl_xray, bml_mr=None ):
             content_specific = Contents_frames[name_content]
             content_person = content_specific.loc[(content_specific['ParticipantID'] == id)]
 
-            if mri_sequence[0] and mri_sequence[1] in content_person.values:
+            if mri_sequence[0] in content_person.values and mri_sequence[1] in content_person.values and mri_sequence[2] in content_person.values:
                 temp = temp + 1
 
         if temp == len(months):
@@ -84,7 +84,7 @@ for i, file in enumerate(glob.glob(directory)):
 
 
 months = ['00m']
-mri_sequence = ['SAG_3D_DESS_RIGHT', 'SAG_3D_DESS_LEFT']
+mri_sequence = ['SAG_3D_DESS_RIGHT', 'SAG_3D_DESS_LEFT','Bilateral PA Fixed Flexion Knee']
 
 # Exracting subject ID from base line
 subject_baseline = Contents_frames['contents_00m.csv']['ParticipantID']
