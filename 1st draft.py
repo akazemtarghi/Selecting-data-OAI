@@ -1,87 +1,52 @@
 import pandas as pd
 import glob
 import os
-
-def eligible(months, subject_baseline, kl_xray, bml_mr=None ):
-    final_content = pd.DataFrame()
+from FindingEligible import Eligible_V1, Eligible_V2
 
 
-
-    for id in subject_baseline:
-        temp = 0
-
-        for i, month in enumerate(months):
-            name_content = 'contents_' + month + '.csv'
-            content_specific = Contents_frames[name_content]
-            content_person = content_specific.loc[(content_specific['ParticipantID'] == id)]
-
-            if mri_sequence[0] in content_person.values and mri_sequence[1] in content_person.values and mri_sequence[2] in content_person.values:
-                temp = temp + 1
-
-        if temp == len(months):
-            eligible_id.append(id)
-            KL_grade = kl_xray.loc[(kl_xray['ID'] == str(id))]
-            final_content = final_content.append(KL_grade)
-
-    return eligible_id, final_content
+def Importing(dir, type):
+    data = pd.read_sas(dir, format='sas7bdat', encoding='iso-8859-1')
+    data.drop_duplicates(subset=['ID', 'SIDE'], inplace=True)
 
 
+    if type == 'kl':
+        data = data[['ID'] + ['SIDE'] + ['V00XRKL']]
+        data = data.dropna(how='any', axis=0)
+        data = data.reset_index(drop=True)
+        temp = data['V00XRKL'].copy()
+        temp.loc[temp < 2] = 0
+        temp.loc[temp > 0] = 1
+        data_binary = data.assign(V00XRKL=temp)
+        return data_binary
+    elif type == 'mr':
+        data = data[['ID'] + ['SIDE'] + ['V00MBMSFMA'] + ['V00MBMSFLA'] + ['V00MBMSFMC']
+                          + ['V00MBMSFLC'] + ['V00MBMSFLP'] + ['V00MBMSFMP'] + ['V00MBMSSS']
+                          + ['V00MBMSTLA'] + ['V00MBMSTLC'] + ['V00MBMSTLP'] + ['V00MBMSTMA']
+                          + ['V00MBMSTMC'] + ['V00MBMSTMP']]
+        data = data.dropna(how='any', axis=0)
+        data = data.reset_index(drop=True)
+        temp = data[['ID'] + ['SIDE']].copy()
+        data = data.drop(columns=['ID', 'SIDE'])
+        data[data > 0] = 1
+        data_binary = pd.concat([temp, data], axis=1)
 
-
-
+        return data_binary
 
 filename_kl = 'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/Coding/kxr_sq_bu00.sas7bdat'
-kl_xray = pd.read_sas(filename_kl, format='sas7bdat', encoding='iso-8859-1')
-
 filename_mr = 'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/Coding/kmri_sq_moaks_bicl00.sas7bdat'
-mri_file = pd.read_sas(filename_mr, format='sas7bdat', encoding='iso-8859-1')
 
-mr_BML = mri_file[['ID']+['SIDE']+['V00MBMSFMA']+['V00MBMSFLA']+['V00MBMSFMC']+['V00MBMSFLC']+['V00MBMSFLP']
-                    +['V00MBMSFMP']+['V00MBMSSS']+['V00MBMSTLA']+['V00MBMSTLC']+['V00MBMSTLP']+['V00MBMSTMA']
-                    +['V00MBMSTMC']+['V00MBMSTMP']]
+# mr_BML.columns = ['ID', 'SIDE', 'femur medial anterior', 'femur lateral anterior', 'femur medial central',
+#                   'femur lateral central', 'femur lateral posterior', 'femur medial posterior',
+#                   'tibia sub-spinous', 'tibia lateral anterior', 'tibia lateral central',
+#                   'tibia lateral posterior', 'tibia medial anterior', 'tibia medial central',
+#                   'tibia medial posterior']
 
-mr_BML.columns = ['ID', 'SIDE', 'femur medial anterior', 'femur lateral anterior', 'femur medial central',
-                      'femur lateral central', 'femur lateral posterior', 'femur medial posterior',
-                      'tibia sub-spinous', 'tibia lateral anterior', 'tibia lateral central',
-                      'tibia lateral posterior', 'tibia medial anterior', 'tibia medial central',
-                      'tibia medial posterior']
-
-
-
-kl_xray = kl_xray[['ID'] + ['SIDE'] + ['V00XRKL']]
-kl_xray.drop_duplicates(subset=['ID', 'SIDE'], inplace=True)
-kl_xray = kl_xray.reset_index(drop=True)
-kl_xray = kl_xray.dropna(how='any', axis=0)
-kl_xray = kl_xray.reset_index(drop=True)
-#nan1 = kl_xray.isna().sum()
-kl_temp = kl_xray.copy()
-kl_temp = kl_xray['V00XRKL']
-kl_temp.loc[kl_temp < 2] = 0
-kl_temp.loc[kl_temp > 0] = 1
-kl_xray_binary = kl_xray.assign(V00XRKL=kl_temp)
-mr_BML.drop_duplicates(subset=['ID', 'SIDE'], inplace=True)
-
-mr_BML = mr_BML.dropna(how='any', axis=0)
-mr_BML = mr_BML.reset_index(drop=True)
-binary = mr_BML.drop(columns=['ID', 'SIDE'])
-binary[binary > 0] = 1
-x = mr_BML[['ID']+['SIDE']]
-mr_BML_binary = pd.concat([x, binary], axis=1)
-
-#nan2 = mr_BML_binary.isna().sum()
-kl_temp = kl_xray.copy()
-kl_temp = kl_xray['ID']
-kl_temp.drop_duplicates(inplace=True)
-kl_temp = kl_temp.reset_index(drop=True)
-#ee=kl_temp['SIDE'][1]
-
-
-
-
+kl = Importing(filename_kl, type='kl')
+mri = Importing(filename_mr, type='mr')
 
 # Importing all contents (.csv files)
 # path and directory of the contents
-path= 'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/contents'
+path = 'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/contents'
 directory = 'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/contents/*.csv'
 
 # storing the names of all contents
@@ -91,8 +56,6 @@ filename = [files for root, dirs, files in os.walk(path)]
 Contents_frames = {}
 for i, file in enumerate(glob.glob(directory)):
     Contents_frames[filename[0][i]] = pd.read_csv(file)
-
-
 
 # Input the months and MRI sequence here for example: 00m, 12m, 96m for months
 
@@ -119,61 +82,17 @@ for i, file in enumerate(glob.glob(directory)):
 'SAG_T2_MAP_RIGHT'
 '''
 
-
 months = ['00m']
-mri_sequence = ['SAG_3D_DESS_RIGHT', 'SAG_3D_DESS_LEFT','Bilateral PA Fixed Flexion Knee']
+mri_sequence = ['SAG_3D_DESS_RIGHT', 'SAG_3D_DESS_LEFT', 'Bilateral PA Fixed Flexion Knee']
 
 # Exracting subject ID from base line
 subject_baseline = Contents_frames['contents_00m.csv']['ParticipantID']
 subject_baseline = subject_baseline.drop_duplicates()
 subject_baseline = subject_baseline.reset_index(drop=True)
-eligible_id = []
-
-#eligible_id, final_content = eligible(months, subject_baseline, kl_xray)
-
-#final_content.drop_duplicates(subset=['ID', 'SIDE'], inplace=True)
-#final_content = final_content.reset_index(drop=True)
 
 content00 = Contents_frames['contents_00m.csv']
-cdsa = content00.loc[(content00['ParticipantID'] == 9000296) & (content00['SeriesDescription']=='Bilateral PA Fixed Flexion Knee')]
-#kl_xray_binary.loc[(kl_xray_binary['ID'] == id)
 
-for id in subject_baseline:
-    content_person = content00.loc[(content00['ParticipantID'] == id)]
+Final_output_v1 = Eligible_V1(subject_baseline, kl, mri, content00, mri_sequence)
+Final_output_v2 = Eligible_V2(subject_baseline, kl, mri, content00, mri_sequence)
 
-    if mri_sequence[0] in content_person.values and mri_sequence[1] in content_person.values and mri_sequence[
-        2] in content_person.values:
-
-
-
-        if not kl_xray_binary.loc[(kl_xray_binary['ID'] == str(id)) & (kl_xray_binary['SIDE'] == 1)].empty:
-
-            if not mr_BML_binary.loc[(mr_BML_binary['ID'] == str(id)) & (mr_BML_binary['SIDE'] == 1)].empty:
-                p2 = content00.loc[(content00['ParticipantID'] == id) & (
-                        content00['SeriesDescription'] == mri_sequence[0])]
-                p1 = content00.loc[(content00['ParticipantID'] == id) &
-                                   (content00['SeriesDescription'] == mri_sequence[2])]
-                eligible_id.append(p1)
-                eligible_id.append(p2)
-
-        if not kl_xray_binary.loc[(kl_xray_binary['ID'] == str(id)) & (kl_xray_binary['SIDE'] == 2)].empty:
-
-            if not mr_BML_binary.loc[(mr_BML_binary['ID'] ==str(id)) & (mr_BML_binary['SIDE'] == 2)].empty:
-                p3 = content00.loc[(content00['ParticipantID'] == id) & (
-                        content00['SeriesDescription'] == mri_sequence[1])]
-                p1 = content00.loc[(content00['ParticipantID'] == id) &
-                                   (content00['SeriesDescription'] == mri_sequence[2])]
-                eligible_id.append(p1)
-                eligible_id.append(p3)
-
-
-
-
-final = pd.concat(eligible_id)
-d = final[['Folder']+['ParticipantID']+['SeriesDescription']]
-
-d.drop_duplicates(inplace=True)
-d.reset_index(drop=True)
-
-d = d.reset_index(drop=True)
 
