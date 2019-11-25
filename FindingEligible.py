@@ -28,7 +28,7 @@ def Eligible_V1(subject,k, m, session, sequences):
                     eligible_out.append(p1)
                     eligible_out.append(p3)
 
-    eligible_out = pd.concat(eligible_out)
+        eligible_out = pd.concat(eligible_out)
     eligible_out = eligible_out[['Folder'] + ['ParticipantID'] + ['SeriesDescription']]
 
     eligible_out.drop_duplicates(inplace=True)

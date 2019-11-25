@@ -42,7 +42,7 @@ filename_mr = 'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/Coding/kmri_sq_
 #                   'tibia medial posterior']
 
 kl = Importing(filename_kl, type='kl')
-mri = Importing(filename_mr, type='mr')
+bml = Importing(filename_mr, type='mr')
 
 # Importing all contents (.csv files)
 # path and directory of the contents
@@ -92,7 +92,18 @@ subject_baseline = subject_baseline.reset_index(drop=True)
 
 content00 = Contents_frames['contents_00m.csv']
 
-Final_output_v1 = Eligible_V1(subject_baseline, kl, mri, content00, mri_sequence)
-Final_output_v2 = Eligible_V2(subject_baseline, kl, mri, content00, mri_sequence)
+Final_output_v1 = Eligible_V1(subject_baseline, kl, bml, content00, mri_sequence)
+#Final_output_v2 = Eligible_V2(subject_baseline, kl, bml, content00, mri_sequence)
+
+
+# Final_output_v1.to_csv(r'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/Coding/Final_output_v1.csv')
+# Final_output_v2.to_csv(r'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/Coding/Final_output_v2.csv')
+
+# kl.to_csv(r'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/Coding/kl.csv')
+# bml.to_csv(r'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/Coding/bml.csv')
+
+temp = Final_output_v1['ParticipantID'].copy()
+temp = temp.drop_duplicates()
+temp = temp.reset_index(drop=True)
 
 
