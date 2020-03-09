@@ -6,19 +6,20 @@ import matplotlib.pyplot as plt
 
 def polylines_amir(points, image):
 
-    points = points.reshape((-1, 1, 2))
-    plt.figure()
-    plt.imshow(image, cmap=plt.cm.bone)
-    img_mod = cv2.fillPoly(image, np.int32([points]), 255).copy()
-    temp = img_mod.copy()
-    temp[temp != 255] = 0
-    img_mod = cv2.morphologyEx(temp, cv2.MORPH_OPEN, kernel=(10, 10)).copy()
-    img = img_mod.copy()
+    temp = image.copy()
 
-    return img
+
+    points = points.reshape((-1, 1, 2))
+
+    temp = cv2.fillPoly(temp, np.int32([points]), 255).copy()
+    temp[temp != 255] = 0
+    temp = cv2.morphologyEx(temp, cv2.MORPH_OPEN, kernel=(10, 10)).copy()
+
+    return temp
 
 
 def get_landmarks(prefix, dir_tibia, dir_femur):
+
     x_list_tibia = []
     y_list_tibia = []
     x_femur_list = []
@@ -48,32 +49,32 @@ def get_landmarks(prefix, dir_tibia, dir_femur):
 
 
 
-prefix = 'C:/Users/Amir Kazemtarghi/Documents/data/images_for_annotations/New folder (2)'
-dir_tibia = '/t.json'
-dir_femur = '/f.json'
-
-image_list, x_list_tibia, y_list_tibia, x_femur_list, y_femur_list = get_landmarks(prefix, dir_tibia, dir_femur)
-
-
-I1 = image_list[1]
-I2 = I1.copy()
-
-points_t = np.zeros([18, 2])
-points_t[:, 0] = x_list_tibia[0]
-points_t[:, 1] = y_list_tibia[0]
-
-
-points_f = np.zeros([17, 2])
-points_f[:, 0] = x_femur_list[0]
-points_f[:, 1] = y_femur_list[0]
-
-image_mask_tibia = polylines_amir(points_t, I1)
-
-plt.figure()
-plt.imshow(image_mask_tibia, cmap=plt.cm.bone)
-image_mask_femur = polylines_amir(points_f, I2)
-
-plt.figure()
-plt.imshow(image_mask_femur, cmap=plt.cm.bone)
+# prefix = 'C:/Users/Amir Kazemtarghi/Documents/data/images_for_annotations/New folder (2)'
+# dir_tibia = '/t.json'
+# dir_femur = '/f.json'
+#
+# image_list, x_list_tibia, y_list_tibia, x_femur_list, y_femur_list = get_landmarks(prefix, dir_tibia, dir_femur)
+#
+#
+# I1 = image_list[1]
+# I2 = I1.copy()
+#
+# points_t = np.zeros([18, 2])
+# points_t[:, 0] = x_list_tibia[0]
+# points_t[:, 1] = y_list_tibia[0]
+#
+#
+# points_f = np.zeros([17, 2])
+# points_f[:, 0] = x_femur_list[0]
+# points_f[:, 1] = y_femur_list[0]
+#
+# image_mask_tibia = polylines_amir(points_t, I1)
+#
+# plt.figure()
+# plt.imshow(image_mask_tibia, cmap=plt.cm.bone)
+# image_mask_femur = polylines_amir(points_f, I2)
+#
+# plt.figure()
+# plt.imshow(image_mask_femur, cmap=plt.cm.bone)
 
 

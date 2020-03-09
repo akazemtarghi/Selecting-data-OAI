@@ -13,6 +13,7 @@ def Importing(dir, type):
         data = data[['ID'] + ['SIDE'] + ['V00XRKL']]
         data = data.dropna(how='any', axis=0)
         data = data.reset_index(drop=True)
+        data.to_csv(r'C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/Coding/kl_multi.csv')
         temp = data['V00XRKL'].copy()
         temp.loc[temp < 2] = 0
         temp.loc[temp > 0] = 1
@@ -65,7 +66,7 @@ for i, file in enumerate(glob.glob(directory)):
 'AP Pelvis'
 'MP_LOCATOR_THIGH'
 'AX_T1_THIGH'
-'PRESCRIPTION_THIGH'
+'PRESCRITION_THIGH'
 'MP_LOCATOR_LEFT'
 'COR_IW_TSE_LEFT'
 'SAG_3D_DESS_LEFT'
@@ -91,6 +92,8 @@ subject_baseline = subject_baseline.drop_duplicates()
 subject_baseline = subject_baseline.reset_index(drop=True)
 
 content00 = Contents_frames['contents_00m.csv']
+
+
 
 Final_output_v1 = Eligible_V1(subject_baseline, kl, bml, content00, mri_sequence)
 #Final_output_v2 = Eligible_V2(subject_baseline, kl, bml, content00, mri_sequence)
