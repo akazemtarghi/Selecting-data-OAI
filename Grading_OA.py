@@ -41,6 +41,7 @@ def filling_dataframe(file, train_indices):
     return train_set
 
 def tensorboardx(train_dataset, writer, model):
+
     trainloader = torch.utils.data.DataLoader(train_dataset,
                                               batch_size=batch_size,
                                               num_workers=0,
@@ -79,6 +80,7 @@ def SplittingData (root='C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/Codin
     """
 
     file = pd.read_csv(root)
+    file = file.reset_index(drop=True)
     file1 = file.copy()
 
     file1.drop_duplicates(subset=['ParticipantID', 'SeriesDescription'], inplace=True)
@@ -103,7 +105,7 @@ def GroupKFold_Amir(input, n_splits):
     X = input
     y = X.landmarks_frame.Label[:]
     y = y.reset_index(drop=True)
-    groups = X.landmarks_frame.ParticipentID[:]
+    groups = X.landmarks_frame.ParticipantID[:]
     group_kfold = GroupKFold(n_splits)
     group_kfold.get_n_splits(X, y, groups)
     print(group_kfold)
@@ -177,11 +179,11 @@ class OAIdataset(Dataset):
         imageID = self.landmarks_frame['ParticipantID'].iloc[idx]
         landmarks = self.landmarks_frame['Label'].iloc[idx]
 
-        #if self.transform:
-         #  resized_roi_med_t = self.transform(resized_roi_med_t)
-          # resized_roi_lat_t = self.transform(resized_roi_lat_t)
+        if self.transform:
+          resized_roi_med_t = self.transform(resized_roi_med_t)
+          resized_roi_lat_t = self.transform(resized_roi_lat_t)
 
-        if self.landmarks_frame['side'] == 'med':
+        if self.landmarks_frame['side'].iloc[idx] == 'med':
 
             sample = {'image': resized_roi_med_t, 'landmarks': landmarks, 'imageID': imageID}
         else:
@@ -386,17 +388,6 @@ Transforms1 = transforms.Compose([transforms.ToTensor()])
 
 csv = pd.read_csv('C:/Users/Amir Kazemtarghi/Documents/MASTER THESIS/Coding/ALL.csv')
 
-dataset = OAIdataset(csv_file=csv,
-                     root_dir='/home/common/Amir/test 1/',
-                     transform=Transforms1)
-
-testloader = torch.utils.data.DataLoader(dataset,
-                                         batch_size=50,
-                                         num_workers=0,
-                                         pin_memory=False)
-
-
-
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -421,7 +412,7 @@ train_set = OAIdataset(csv_file=train_Csv,
 
 test_set = OAIdataset(csv_file=test_Csv,
                           root_dir='C:/Users/Amir Kazemtarghi/Documents/INTERNSHIP/data/DatabaseA/',
-                          transform=Transforms1)
+                          transform=Transforms)
 
 testloader = torch.utils.data.DataLoader(test_set,
                                          batch_size=batch_size,
@@ -431,7 +422,7 @@ testloader = torch.utils.data.DataLoader(test_set,
 Groupkfold = GroupKFold_Amir(train_set, n_splits=5)
 
 
-y_score_sum = np.zeros((168,5))
+y_score_sum = np.zeros((186, 2))
 patience = 3
 tensorboardx(train_set, writer, A)
 nfold = 1
